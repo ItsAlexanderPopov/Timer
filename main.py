@@ -9,14 +9,7 @@ from config_manager import ConfigManager
 from utils import resource_path
 from settings_dialog import SettingsDialog
 import psutil
-
-# Lazy import keyboard
-keyboard = None
-
-def import_keyboard():
-    global keyboard
-    if keyboard is None:
-        import keyboard
+from hotkeyhandler import HotkeyHandler, import_keyboard
 
 def resource_path(relative_path):
     try:
@@ -24,32 +17,6 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
-class HotkeyHandler(QObject):
-    start_signal = Signal()
-    stop_signal = Signal()
-
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-        self.setup_hotkeys()
-
-    def setup_hotkeys(self):
-        import_keyboard()
-        keyboard.add_hotkey(self.config['start_key'], self.emit_start)
-        keyboard.add_hotkey(self.config['stop_key'], self.emit_stop)
-
-    def emit_start(self):
-        self.start_signal.emit()
-
-    def emit_stop(self):
-        self.stop_signal.emit()
-
-    def update_config(self, new_config):
-        self.config = new_config
-        import_keyboard()
-        keyboard.unhook_all_hotkeys()
-        self.setup_hotkeys()
 
 class SingleInstance:
     def __init__(self):
@@ -99,6 +66,8 @@ class TimerApp(QApplication):
         self.hotkey_handler = HotkeyHandler(self.config)
         self.hotkey_handler.start_signal.connect(self.timer_widget.start_timer)
         self.hotkey_handler.stop_signal.connect(self.timer_widget.stop_timer)
+        self.settings_dialog.hotkeys_disabled.connect(self.hotkey_handler.disable_hotkeys)
+        self.settings_dialog.hotkeys_enabled.connect(self.hotkey_handler.enable_hotkeys)
         self.settings_dialog.config_updated.connect(self.update_config_preview)
         self.setup_tray_icon()
         self.timer_widget.show()
@@ -136,7 +105,7 @@ class TimerApp(QApplication):
         self.hotkey_handler.update_config(self.config)
     
     def quit(self):
-        import_keyboard()
+        keyboard = import_keyboard()
         keyboard.unhook_all_hotkeys()
         self.tray_icon.setVisible(False)
         if os.path.exists(self.single_instance.lockfile):
