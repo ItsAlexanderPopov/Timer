@@ -11,17 +11,11 @@ from settings_dialog import SettingsDialog
 import psutil
 from hotkeyhandler import HotkeyHandler, import_keyboard
 
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
 class SingleInstance:
     def __init__(self):
         self.lockfile = os.path.normpath(tempfile.gettempdir() + '/timer.lock')
 
+    # Checks for existing instance using a lock file
     def already_running(self):
         try:
             if os.path.exists(self.lockfile):
@@ -38,11 +32,13 @@ class SingleInstance:
 class TimerApp(QApplication):
     def __init__(self, argv):
         super().__init__(argv)
+        # Check for single instance
         self.single_instance = SingleInstance()
         if self.single_instance.already_running():
             QMessageBox.warning(None, "Timer", "An instance of Timer is already running.")
             sys.exit(1)
 
+        # Initialize config, screens, and application settings
         self.setApplicationName("Timer")
         self.setApplicationDisplayName("Timer")
         self.config_manager = ConfigManager()
@@ -57,9 +53,10 @@ class TimerApp(QApplication):
         # Set the application icon
         icon = QIcon(resource_path("icon.ico"))
         self.setWindowIcon(icon)
-        
+        # Schedule delayed initialization
         QTimer.singleShot(0, self.delayed_init)
 
+    # Create and connect TimerWidget, SettingsDialog, and HotkeyHandler
     def delayed_init(self):
         self.timer_widget = TimerWidget(self.config, self.screens)
         self.settings_dialog = SettingsDialog(self.config, self.screens)
@@ -73,6 +70,7 @@ class TimerApp(QApplication):
         self.timer_widget.show()
         self.timer_widget.update_position()
 
+    # Create system tray icon with settings and quit options
     def setup_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
         icon_path = resource_path("icon.png")
@@ -87,6 +85,7 @@ class TimerApp(QApplication):
         self.tray_icon.setContextMenu(self.tray_menu)
         self.tray_icon.show()
 
+    # Display settings dialog and handle configuration updates
     def show_settings(self):
         if self.settings_dialog.exec() == SettingsDialog.Accepted:
             self.update_config(self.config)
@@ -95,15 +94,18 @@ class TimerApp(QApplication):
             # If dialog was cancelled, revert to original config
             self.update_config_preview(self.config)
 
+    # Update UI components with new configuration (preview mode)
     def update_config_preview(self, new_config):
         self.timer_widget.update_config(new_config)
         self.hotkey_handler.update_config(new_config)
 
+    # Apply new configuration to all components
     def update_config(self, new_config):
         self.config = new_config
         self.timer_widget.update_config(self.config)
         self.hotkey_handler.update_config(self.config)
-    
+        
+    # Clean up resources and exit the application
     def quit(self):
         keyboard = import_keyboard()
         keyboard.unhook_all_hotkeys()

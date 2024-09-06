@@ -20,6 +20,7 @@ class HotkeyHandler(QObject):
     start_signal = Signal()
     stop_signal = Signal()
 
+    # Initialize handler with given config
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -30,6 +31,7 @@ class HotkeyHandler(QObject):
         self.setup_hotkeys()
 
     def setup_hotkeys(self):
+        # Set up keyboard hooks for start and stop keys
         self.keyboard.on_press_key(self.config['start_key'], self.emit_start, suppress=False)
         self.keyboard.on_press_key(self.config['stop_key'], self.emit_stop, suppress=False)
         
@@ -45,6 +47,7 @@ class HotkeyHandler(QObject):
         if self.hotkeys_active:
             self.stop_signal.emit()
 
+    # Update hotkey configuration
     def update_config(self, new_config):
         self.keyboard.unhook_all()
         if self.kill_process:
@@ -54,12 +57,15 @@ class HotkeyHandler(QObject):
         self.exit_event.clear()
         self.setup_hotkeys()
 
+    # Disable hotkey functionality
     def disable_hotkeys(self):
         self.hotkeys_active = False
 
+     # Enable hotkey functionality
     def enable_hotkeys(self):
         self.hotkeys_active = True
 
+    # Clean up resources on object destruction
     def __del__(self):
         self.keyboard.unhook_all()
         if self.kill_process:

@@ -10,6 +10,7 @@ class SettingsDialog(QDialog):
     hotkeys_disabled = Signal()
     hotkeys_enabled = Signal()
     
+    # Initialize dialog with current config and available screens
     def __init__(self, config, screens):
         super().__init__()
         self.original_config = config
@@ -22,7 +23,8 @@ class SettingsDialog(QDialog):
         
         # Connect the finished signal to re-enable hotkeys
         self.finished.connect(self.on_dialog_finished)
-        
+    
+    # Create UI elements for all configurable options
     def init_ui(self):
         layout = QVBoxLayout()
         
@@ -83,18 +85,20 @@ class SettingsDialog(QDialog):
         layout.addLayout(button_layout)
         
         self.setLayout(layout)
-        
+
+    # Helper method to create consistent layout for options    
     def create_option_layout(self, label_text, widget):
         layout = QHBoxLayout()
         label = QLabel(label_text)
-        label.setFixedWidth(80)  # Set a fixed width for all labels
+        label.setFixedWidth(80)
         layout.addWidget(label)
         
-        widget.setFixedWidth(120)  # Set a fixed width for all widgets
+        widget.setFixedWidth(120)
         layout.addWidget(widget)
-        layout.addStretch()  # Add stretch to push widgets to the left
+        layout.addStretch()
         return layout
-        
+
+    # Prepare UI for capturing a new key binding    
     def set_key_binding(self, key_type):
         self.current_key_binding = key_type
         button = self.findChild(QPushButton, key_type)
@@ -103,6 +107,7 @@ class SettingsDialog(QDialog):
             button.setFocus()
             self.grabKeyboard()  # Grab keyboard focus
         
+    # Handle key press events for hotkey configuration
     def keyPressEvent(self, event):
         if self.current_key_binding:
             key = QKeySequence(event.key()).toString()
@@ -123,6 +128,7 @@ class SettingsDialog(QDialog):
         else:
             super().keyPressEvent(event)
     
+    # Reset UI after key binding is set or cancelled
     def reset_key_binding(self):
         self.releaseKeyboard()
         self.current_key_binding = None
@@ -130,6 +136,7 @@ class SettingsDialog(QDialog):
             if button.text() == 'Press a key...':
                 button.setText(self.temp_config.get(button.objectName(), 'Not Set'))
     
+    # Check if the key is already in use
     def is_key_duplicate(self, key):
         return key in [self.temp_config['start_key'], self.temp_config['stop_key'], self.temp_config.get('kill_key')]
         
@@ -149,14 +156,15 @@ class SettingsDialog(QDialog):
         self.original_config.update(self.temp_config)
         self.accept()
         
+    # Revert changes if dialog is cancelled
     def reject(self):
         # Revert changes
         self.temp_config = copy.deepcopy(self.original_config)
         self.config_updated.emit(self.original_config)
         super().reject()
-        
+
+    # Reset temp_config to original_config each time the dialog is shown
     def showEvent(self, event):
-        # Reset temp_config to original_config each time the dialog is shown
         self.temp_config = copy.deepcopy(self.original_config)
         self.start_key_button.setText(self.temp_config['start_key'])
         self.stop_key_button.setText(self.temp_config['stop_key'])
@@ -167,5 +175,6 @@ class SettingsDialog(QDialog):
         self.hotkeys_disabled.emit()  # Disable hotkeys when settings dialog is shown
         super().showEvent(event)
     
+    # Re-enable hotkeys when dialog is closed
     def on_dialog_finished(self):
         self.hotkeys_enabled.emit()  # Re-enable hotkeys when settings dialog is closed

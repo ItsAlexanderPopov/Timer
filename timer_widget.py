@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, QTimer, QTime
 from PySide6.QtGui import QColor, QPainter, QFont
 
 class TimerWidget(QWidget):
+    # Initialize widget with given config and available screens
     def __init__(self, config, screens):
         super().__init__()
         self.config = config
@@ -15,7 +16,8 @@ class TimerWidget(QWidget):
         self.ensure_topmost_timer = QTimer(self)
         self.ensure_topmost_timer.timeout.connect(self.ensure_topmost)
         self.ensure_topmost_timer.start(1000)  # Check every second
-        
+    
+    # Set up widget UI and window flags for always-on-top behavior    
     def init_ui(self):
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint | 
@@ -38,7 +40,8 @@ class TimerWidget(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
         self.timer.setInterval(1000)
-        
+    
+    # Update displayed time    
     def update_time(self):
         self.time = self.time.addSecs(1)
         self.time_label.setText(self.time.toString('hh:mm:ss'))
@@ -69,7 +72,8 @@ class TimerWidget(QWidget):
             border-radius: 10px;
             padding: 0px;
         """)
-        
+
+    # Update widget position based on config    
     def update_position(self):
         self.adjustSize()
         screen_index = self.config.get('screen_index', 0)
@@ -109,7 +113,8 @@ class TimerWidget(QWidget):
                     ctypes.windll.user32.ShowWindow(msg.hWnd, 1)  # SW_SHOWNORMAL
                     return True, 0
         return super().nativeEvent(eventType, message)
-
+    
+    # Ensure widget stays on top using Windows API
     def ensure_topmost(self):
         # Use Windows API to set the window as topmost
         if hasattr(ctypes.windll.user32, 'SetWindowPos'):

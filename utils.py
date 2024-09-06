@@ -1,6 +1,7 @@
 import os
 import sys
 
+# Resolves resource paths for both development and bundled environments
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
