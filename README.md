@@ -10,5 +10,20 @@ To run the application, follow these steps:
 
 1. **Download the code** from the repository.
 2. **Run the application** by executing the following command:
+   
+   Install Dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
+   Initialize main file
    ```bash
    python main.py
+   ```
+3. (Optional) install the executeable using nuitka and run Timer.exe from project folder.
+   ```bash
+   pip install nuitka
+   ```
+   ```bash
+   python build_script.py
+   ```
+   To be able and use the application externally, wrap in a folder both icon files, config.txt and the executable.
