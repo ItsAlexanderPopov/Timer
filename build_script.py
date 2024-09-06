@@ -46,6 +46,7 @@ def build_executable():
         "--disable-ccache",
         "--nofollow-import-to=tkinter,matplotlib",
         "--no-deployment-flag=uses-tkinter",
+        "--include-data-file=sound.wav=sound.wav",
         "--output-filename=%s" % output_filename,
         "main.py"
     ]

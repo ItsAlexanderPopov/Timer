@@ -2,6 +2,9 @@ import ctypes
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, QTimer, QTime
 from PySide6.QtGui import QColor, QPainter, QFont
+from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtCore import QUrl
+from utils import resource_path
 
 class TimerWidget(QWidget):
     # Initialize widget with given config and available screens
@@ -16,6 +19,7 @@ class TimerWidget(QWidget):
         self.ensure_topmost_timer = QTimer(self)
         self.ensure_topmost_timer.timeout.connect(self.ensure_topmost)
         self.ensure_topmost_timer.start(1000)  # Check every second
+        self.setup_sounds()
     
     # Set up widget UI and window flags for always-on-top behavior    
     def init_ui(self):
@@ -41,10 +45,22 @@ class TimerWidget(QWidget):
         self.timer.timeout.connect(self.update_time)
         self.timer.setInterval(1000)
     
+    def setup_sounds(self):
+        self.sound = QSoundEffect()
+        self.sound.setSource(QUrl.fromLocalFile(resource_path("sound.wav")))
+
     # Update displayed time    
     def update_time(self):
         self.time = self.time.addSecs(1)
         self.time_label.setText(self.time.toString('hh:mm:ss'))
+        
+        # Play sounds at specific times
+        if self.time == QTime(0, 1, 0):  # 1 minute
+            self.sound.play()
+        elif self.time == QTime(0, 1, 30):  # 1 minute 30 seconds
+            self.sound.play()
+        elif self.time == QTime(0, 3, 0):  # 3 minutes
+            self.sound.play()
         
     def start_timer(self):
         if not self.timer_running:
