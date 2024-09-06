@@ -90,5 +90,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Installer Config
+# Installers
 timer.spec
+Timer.zip
+Timer.exe
+main.dist
+main.build
+main.onefile-build
