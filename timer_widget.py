@@ -54,13 +54,9 @@ class TimerWidget(QWidget):
         self.time = self.time.addSecs(1)
         self.time_label.setText(self.time.toString('hh:mm:ss'))
         
-        # Play sounds at specific times
-        if self.time == QTime(0, 1, 0):  # 1 minute
-            self.sound.play()
-        elif self.time == QTime(0, 1, 30):  # 1 minute 30 seconds
-            self.sound.play()
-        elif self.time == QTime(0, 3, 0):  # 3 minutes
-            self.sound.play()
+         # Play sound at specific times
+        if self.time in [QTime(0, 1, 0), QTime(0, 1, 30), QTime(0, 3, 0)]:
+            self.play_sound()
         
     def start_timer(self):
         if not self.timer_running:
