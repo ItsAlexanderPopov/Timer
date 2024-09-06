@@ -30,27 +30,27 @@ class HotkeyHandler(QObject):
         self.setup_hotkeys()
 
     def setup_hotkeys(self):
-        self.keyboard.add_hotkey(self.config['start_key'], self.emit_start)
-        self.keyboard.add_hotkey(self.config['stop_key'], self.emit_stop)
+        self.keyboard.on_press_key(self.config['start_key'], self.emit_start, suppress=False)
+        self.keyboard.on_press_key(self.config['stop_key'], self.emit_stop, suppress=False)
         
         if 'kill_key' in self.config:
             self.kill_process = Process(target=kill_process, args=(os.getpid(), self.exit_event, self.config['kill_key']))
             self.kill_process.start()
 
-    def emit_start(self):
+    def emit_start(self, e):
         if self.hotkeys_active:
             self.start_signal.emit()
 
-    def emit_stop(self):
+    def emit_stop(self, e):
         if self.hotkeys_active:
             self.stop_signal.emit()
 
     def update_config(self, new_config):
-        self.config = new_config
-        self.keyboard.unhook_all_hotkeys()
+        self.keyboard.unhook_all()
         if self.kill_process:
             self.exit_event.set()
             self.kill_process.join()
+        self.config = new_config
         self.exit_event.clear()
         self.setup_hotkeys()
 
@@ -61,6 +61,7 @@ class HotkeyHandler(QObject):
         self.hotkeys_active = True
 
     def __del__(self):
+        self.keyboard.unhook_all()
         if self.kill_process:
             self.exit_event.set()
             self.kill_process.join()
